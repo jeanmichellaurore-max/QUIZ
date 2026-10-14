@@ -10,31 +10,35 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
-    - name: Install Cordova
-      run: npm install -g cordova
+    - name: Install Cordova and Java
+      run: |
+        npm install -g cordova
+        sudo apt-get update
+        sudo apt-get install -y openjdk-17-jdk
 
     - name: Create Cordova Project
       run: |
         cordova create app com.wayomnan.app "WayomNan"
         cd app
+        # Kopye tout bagay eksepte dosye .github la nan www
         rm -rf www/*
-        cp -r ../* www/ || true
+        find .. -maxdepth 1 ! -name '.' ! -name 'app' ! -name '.github' ! -name '.git' -exec cp -r {} www/ \;
         cordova platform add android
 
     - name: Build Android APK
       run: |
         cd app
-        cordova build android --no-telemetry
+        cordova build android --debug --no-telemetry
 
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WayomNan-APK
         path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
