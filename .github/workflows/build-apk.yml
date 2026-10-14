@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Cordova
+      run: npm install -g cordova
+
+    - name: Create Cordova Project
+      run: |
+        cordova create app com.wayomnan.app "WayomNan"
+        cd app
+        rm -rf www/*
+        cp -r ../* www/ || true
+        cordova platform add android
+
+    - name: Build Android APK
+      run: |
+        cd app
+        cordova build android --no-telemetry
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: WayomNan-APK
+        path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
